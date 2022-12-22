@@ -39,9 +39,12 @@ const signinResponseSchema = z.object({ accessToken: z.string() });
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type SigninInput = z.infer<typeof signinSchema>;
 
-export const { schemas: userSchemas, $ref } = buildJsonSchemas({
-  createUserSchema,
-  createUserResponseSchema,
-  signinSchema,
-  signinResponseSchema,
-});
+export const { schemas: userSchemas, $ref } = buildJsonSchemas(
+  {
+    createUserSchema,
+    createUserResponseSchema,
+    signinSchema,
+    signinResponseSchema,
+  },
+  { $id: "user" }
+);

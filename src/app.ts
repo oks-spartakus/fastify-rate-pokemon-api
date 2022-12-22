@@ -1,8 +1,14 @@
 import Fastify, { FastifyReply, FastifyRequest } from "fastify";
+import { withRefResolver } from "fastify-zod";
 import fjwt from "@fastify/jwt";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 
 import userRoutes from "./modules/user/user.route";
 import { userSchemas } from "./modules/user/user.schema";
+import { pokemonSchemas } from "./modules/pokemon/pokemon.schema";
+import pokemonRoutes from "./modules/pokemon/pokemon.route";
+import { version } from "../package.json";
 
 export const server = Fastify();
 
@@ -30,14 +36,32 @@ server.get("/health", async () => {
 });
 
 const main = async () => {
-  for (const schema of userSchemas) {
+  for (const schema of [...userSchemas, ...pokemonSchemas]) {
     server.addSchema(schema);
   }
 
-  server.register(userRoutes, { prefix: "api/users" });
+  server.register(swagger, {});
+  server.register(
+    swaggerUi,
+    withRefResolver({
+      routePrefix: "/docs",
+      exposeRoute: true,
+      staticCSP: true,
+      openapi: {
+        info: {
+          title: "Rate Pokemon API",
+          description: "API for voting for best Pokemon",
+          version,
+        },
+      },
+    })
+  );
+  server.register(userRoutes, { prefix: "users" });
+  server.register(pokemonRoutes, { prefix: "pokemons" });
 
   try {
     await server.listen({ port: 3000 });
+    server.swagger();
 
     console.log("server ready at port 3000");
   } catch (e) {
