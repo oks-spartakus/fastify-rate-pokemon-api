@@ -1,10 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { register } from "fastify-zod";
-import {
-  getUsersHandler,
-  registerUserHandler,
-  signinHandler,
-} from "./user.controller";
+
+import { registerUserHandler, signinHandler } from "./user.controller";
 import { $ref } from "./user.schema";
 
 const userRoutes = async (server: FastifyInstance) => {
@@ -29,8 +25,6 @@ const userRoutes = async (server: FastifyInstance) => {
     },
     signinHandler
   );
-
-  server.get("/", { preHandler: [server.auth] }, getUsersHandler);
 };
 
 export default userRoutes;

@@ -1,8 +1,9 @@
+import { Prisma } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { server } from "../../app";
 import { verifyPassword } from "../../utils/hash";
 import { CreateUserInput, SigninInput } from "./user.schema";
-import { createUser, findUserByEmail, findUsers } from "./user.service";
+import { createUser, findUserByEmail } from "./user.service";
 
 export const registerUserHandler = async (
   request: FastifyRequest<{ Body: CreateUserInput }>,
@@ -15,7 +16,12 @@ export const registerUserHandler = async (
 
     return reply.code(201).send(user);
   } catch (error) {
-    console.error(error);
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return reply.code(409).send("There is already user with this email.");
+    }
     return reply.code(500).send(error);
   }
 };
@@ -45,10 +51,4 @@ export const signinHandler = async (
   }
 
   return reply.code(401).send({ message: "Invalid email or password" });
-};
-
-export const getUsersHandler = async () => {
-  const users = await findUsers();
-
-  return users;
 };
